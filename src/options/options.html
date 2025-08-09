@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Options</title>
+    <link rel="stylesheet" href="./options.css" />
+    <script src="./options.module.ts" type="module"></script>
+  </head>
+  <body>
+    <options-checkbox-option id="checkbox-option">Example checkbox option.</options-checkbox-option>
+    <line-break />
+    <options-option id="text-option">
+      Example text option
+      <input class="option-text" type="text" placeholder="Yippee!" />
+    </options-option>
+    <line-break />
+    <options-option id="number-option">
+      Example number option
+      <input class="option-number" type="text" placeholder="0" />
+      seconds
+    </options-option>
+    <line-break />
+    <button id="save-button" disabled="">Save Changes</button>
+    <span id="save-status"></span>
+  </body>
+</html>

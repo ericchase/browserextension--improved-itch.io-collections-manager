@@ -1,0 +1,15 @@
+.eye-off-icon {
+  cursor: pointer;
+  user-select: none;
+  width: calc(16em / 14);
+  height: calc(16em / 14);
+  margin-inline-end: 0.125em;
+  vertical-align: bottom;
+  stroke: lightgray;
+  &:hover {
+    stroke: gray;
+  }
+  &.toggled {
+    stroke: red;
+  }
+}

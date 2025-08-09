@@ -1,0 +1,28 @@
+div.game_cell.collection-hidden {
+  opacity: 10%;
+}
+div.game_cell.collection-hidden:hover {
+  opacity: 50%;
+}
+
+div.collections-manager-panel {
+  background-color: white;
+  border-radius: 0.5em;
+  border: 0.125em solid lightgray;
+  font-size: 1rem;
+  margin: 0.5em;
+  padding: 0.5em;
+  position: fixed;
+  top: 0;
+  z-index: 9999;
+  /* min-width: 10em; */
+  /* min-height: 5em; */
+  width: max-content;
+  /* height: 5em; */
+}
+
+@media screen and (width > 650px) and (width <= 960px) {
+  div.collections-manager-panel {
+    top: 2.75em;
+  }
+}
