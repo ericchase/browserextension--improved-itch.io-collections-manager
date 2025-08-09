@@ -1,0 +1,3 @@
+# the other files are copied from out
+/release/**/temp/**
+!/release/**/temp/manifest.json
