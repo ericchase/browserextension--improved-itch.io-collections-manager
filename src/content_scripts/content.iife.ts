@@ -10,7 +10,7 @@ Async_WebPlatform_DOM_ReadyState_Callback({
   },
 });
 
-function updateIcons(args: { collection_name: string; game_id: string }, force_value?: boolean) {
+function updateIcons(args: { collection_name: string; game_id: string }, force_value?: boolean): void {
   updateGameCells(args, force_value);
   updateGamePageCollectionsManager(args, force_value);
 }

@@ -166,7 +166,7 @@ async function async_onMessageListener(message: StorageMessage, sendResponse: (r
   }
 }
 
-function broadcastUIRefresh(data: { collection_name: string; game_id: string; contains: boolean }[]) {
+function broadcastUIRefresh(data: { collection_name: string; game_id: string; contains: boolean }[]): void {
   chrome.tabs.query({}, (tabs) => {
     for (const tab of tabs) {
       if (tab.id && tab.url && new URL(tab.url).hostname.endsWith('itch.io')) {

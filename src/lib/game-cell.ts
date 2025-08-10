@@ -15,24 +15,24 @@ const game_id_dataset_key = 'data-game_id';
 const game_cell_set = new Set<HTMLDivElement>();
 const game_id_to_cells_map = new Map<string, HTMLDivElement[]>();
 
-export function setupGameCellObserver() {
+export function setupGameCellObserver(): void {
   WebPlatform_DOM_Element_Added_Observer_Class({
     selector: game_cell_selector,
   }).subscribe(async (div_game_cell) => {
     if (div_game_cell instanceof HTMLDivElement) {
-      await async_processGameCell(div_game_cell);
+      await async_processGameCell(WebPlatform_Node_Reference_Class(div_game_cell).as(HTMLDivElement));
     }
   });
 }
 
-async function async_processGameCell(game_cell: HTMLDivElement) {
+async function async_processGameCell(game_cell: HTMLDivElement): Promise<void> {
   const game_id = game_cell.getAttribute(game_id_dataset_key) ?? undefined;
   if (game_id !== undefined) {
     await async_setupGameCell(game_cell, game_id);
   }
 }
 
-async function async_setupGameCell(game_cell: HTMLDivElement, game_id: string) {
+async function async_setupGameCell(game_cell: HTMLDivElement, game_id: string): Promise<void> {
   if (game_cell_set.has(game_cell) === false) {
     try {
       game_cell_set.add(game_cell);

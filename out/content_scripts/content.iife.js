@@ -137,14 +137,6 @@ function Core_Map_Get_Or_Default(map, key, newValue) {
   map.set(key, value);
   return value;
 }
-async function Async_Core_Map_Get_Or_Default(map, key, newValue) {
-  if (map.has(key)) {
-    return map.get(key);
-  }
-  const value = await newValue();
-  map.set(key, value);
-  return value;
-}
 
 // src/lib/ericchase/WebPlatform_DOM_Element_Added_Observer_Class.ts
 class Class_WebPlatform_DOM_Element_Added_Observer_Class {
@@ -420,7 +412,7 @@ function setupGameCellObserver() {
     selector: game_cell_selector
   }).subscribe(async (div_game_cell) => {
     if (div_game_cell instanceof HTMLDivElement) {
-      await async_processGameCell(div_game_cell);
+      await async_processGameCell(WebPlatform_Node_Reference_Class(div_game_cell).as(HTMLDivElement));
     }
   });
 }
@@ -516,33 +508,36 @@ var game_manager_set = new Set;
 var game_id_to_manager_map = new Map;
 var parser3 = new DOMParser;
 async function async_createGamePageCollectionsManager(game_id) {
-  const div_manager2 = WebPlatform_Node_Reference_Class(parser3.parseFromString(game_page_collections_manager_default, "text/html").querySelector("div")).as(HTMLDivElement);
-  const game_collection_set = await async_requestGetGameCollections({ game_id });
-  const createCollectionIcon = (collection_name, constructor) => {
-    const icon = constructor();
-    div_manager2.appendChild(icon);
-    icon.addEventListener("click", async () => {
-      switch (updateGamePageCollectionsManager({ collection_name, game_id })) {
-        case true:
-          await async_requestAddGameToCollection({ collection_name, game_id });
-          break;
-        case false:
-          await async_requestRemoveGameFromCollection({ collection_name, game_id });
-          break;
-      }
-    });
-    updateGamePageCollectionsManager({ collection_name, game_id }, game_collection_set.has(collection_name));
-  };
-  createCollectionIcon("favorites", CreateHeartIcon);
-  createCollectionIcon("hidden", CreateEyeOffIcon);
-  return div_manager2;
+  const div_manager2 = game_id_to_manager_map.get(game_id);
+  if (div_manager2 !== undefined) {
+    return div_manager2;
+  } else {
+    const div_manager3 = WebPlatform_Node_Reference_Class(parser3.parseFromString(game_page_collections_manager_default, "text/html").querySelector("div")).as(HTMLDivElement);
+    game_manager_set.add(div_manager3);
+    game_id_to_manager_map.set(game_id, div_manager3);
+    const game_collection_set = await async_requestGetGameCollections({ game_id });
+    const createCollectionIcon = (collection_name, constructor) => {
+      const icon = constructor();
+      div_manager3.appendChild(icon);
+      icon.addEventListener("click", async () => {
+        switch (updateGamePageCollectionsManager({ collection_name, game_id })) {
+          case true:
+            await async_requestAddGameToCollection({ collection_name, game_id });
+            break;
+          case false:
+            await async_requestRemoveGameFromCollection({ collection_name, game_id });
+            break;
+        }
+      });
+      updateGamePageCollectionsManager({ collection_name, game_id }, game_collection_set.has(collection_name));
+    };
+    createCollectionIcon("favorites", CreateHeartIcon);
+    createCollectionIcon("hidden", CreateEyeOffIcon);
+    return div_manager3;
+  }
 }
 async function async_showGamePageCollectionsManager(ul_user_tools, game_id) {
-  const div_manager2 = await Async_Core_Map_Get_Or_Default(game_id_to_manager_map, game_id, async () => {
-    const div_manager3 = await async_createGamePageCollectionsManager(game_id);
-    game_manager_set.add(div_manager3);
-    return div_manager3;
-  });
+  const div_manager2 = await async_createGamePageCollectionsManager(game_id);
   ul_user_tools.after(div_manager2);
 }
 function updateGamePageCollectionsManager(args, force_value) {
@@ -577,9 +572,11 @@ function updateGamePageCollectionsManager(args, force_value) {
 }
 
 // src/lib/game-page.ts
+var game_page_meta_selector = 'meta[name="itch:path"]';
+var game_page_user_tools_selector = "#user_tools";
 function setupGamePageObserver() {
   WebPlatform_DOM_Element_Added_Observer_Class({
-    selector: 'meta[name="itch:path"]'
+    selector: game_page_meta_selector
   }).subscribe((meta_game_id) => {
     if (meta_game_id instanceof HTMLMetaElement) {
       const game_id = meta_game_id.getAttribute("content")?.slice("games/".length);
@@ -591,11 +588,11 @@ function setupGamePageObserver() {
 }
 function processGamePage(game_id) {
   WebPlatform_DOM_Element_Added_Observer_Class({
-    selector: "#user_tools"
+    selector: game_page_user_tools_selector
   }).subscribe(async (ul_user_tools, unsubscribe) => {
     if (ul_user_tools instanceof HTMLUListElement) {
       unsubscribe();
-      await async_setupGamePage(ul_user_tools, game_id);
+      await async_setupGamePage(WebPlatform_Node_Reference_Class(ul_user_tools).as(HTMLUListElement), game_id);
     }
   });
 }

@@ -4,13 +4,13 @@ import { WebPlatform_Node_Reference_Class } from './ericchase/WebPlatform_Node_R
 
 const parser = new DOMParser();
 
-export function CreateEyeOffIcon() {
+export function CreateEyeOffIcon(): SVGElement {
   const svg = WebPlatform_Node_Reference_Class(parser.parseFromString(eyeoffsvg, 'text/html').querySelector('svg')).as(SVGElement);
   svg.classList.add('eye-off-icon');
   return svg;
 }
 
-export function CreateHeartIcon() {
+export function CreateHeartIcon(): SVGElement {
   const svg = WebPlatform_Node_Reference_Class(parser.parseFromString(heartsvg, 'text/html').querySelector('svg')).as(SVGElement);
   svg.classList.add('heart-icon');
   return svg;

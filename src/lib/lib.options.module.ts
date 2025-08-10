@@ -8,7 +8,7 @@ export const options = {
 
 export const OptionKeys = Object.freeze(Object.keys(options));
 
-export async function LoadOptions() {
+export async function LoadOptions(): Promise<void> {
   let data: Partial<typeof options> = {};
   if (typeof chrome !== 'undefined') {
     const { callback, promise } = ChromeCallback();
@@ -28,7 +28,7 @@ export async function LoadOptions() {
   }
 }
 
-export async function SaveOptions() {
+export async function SaveOptions(): Promise<void> {
   if (typeof chrome !== 'undefined') {
     const { callback, promise } = ChromeCallback();
     chrome.storage.local.set(options, callback);
