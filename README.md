@@ -2,7 +2,7 @@
 
 https://github.com/ericchase/browserextension--improved-itch.io-collections-manager
 
-An improved Collections manager for https://itch.io/.
+An improved collections manager for https://itch.io/.
 
 ### Feature Set
 
