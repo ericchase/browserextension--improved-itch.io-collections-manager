@@ -17,6 +17,13 @@
       "matches": [
         "https://*.itch.io/*"
       ],
+      "css": [
+        "assets/icons/eye-off.css",
+        "assets/icons/heart.css",
+        "assets/game-cell-collections-manager.css",
+        "assets/game-cell.css",
+        "assets/game-page-collections-manager.css"
+      ],
       "js": [
         "content_scripts/content.iife.js"
       ],

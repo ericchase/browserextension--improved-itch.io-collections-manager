@@ -1,0 +1,6 @@
+div.game_cell.collection-hidden {
+  opacity: 10%;
+}
+div.game_cell.collection-hidden:hover {
+  opacity: 50%;
+}

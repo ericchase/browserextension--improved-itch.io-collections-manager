@@ -1,13 +1,5 @@
 (() => {
 
-// src/lib/ericchase/WebPlatform_DOM_Inject_CSS.ts
-function WebPlatform_DOM_Inject_CSS(styles) {
-  const stylesheet = new CSSStyleSheet;
-  stylesheet.replaceSync(styles);
-  document.adoptedStyleSheets.push(stylesheet);
-  return stylesheet;
-}
-
 // src/lib/ericchase/WebPlatform_DOM_ReadyState_Callback.ts
 async function Async_WebPlatform_DOM_ReadyState_Callback(config) {
   async function DOMContentLoaded() {
@@ -39,6 +31,33 @@ async function Async_WebPlatform_DOM_ReadyState_Callback(config) {
       break;
   }
 }
+
+// src/assets/icons/eye-off.svg
+var eye_off_default = `<!-- https://lucide.dev/icons/eye-off -->
+<!--
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part
+of Feather (MIT). All other copyright (c) for Lucide are held by Lucide
+Contributors 2022.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off-icon lucide-eye-off">
+  <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+  <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+  <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+  <path d="m2 2 20 20" />
+</svg>
+`;
+
+// src/assets/icons/heart.svg
+var heart_default = `<!-- https://lucide.dev/icons/heart -->\r
+<!--\r
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part\r
+of Feather (MIT). All other copyright (c) for Lucide are held by Lucide\r
+Contributors 2022.\r
+-->\r
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart">\r
+  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />\r
+</svg>\r
+`;
 
 // src/lib/ericchase/WebPlatform_Node_Reference_Class.ts
 class Class_WebPlatform_Node_Reference_Class {
@@ -91,94 +110,40 @@ function WebPlatform_Node_Reference_Class(node) {
   return new Class_WebPlatform_Node_Reference_Class(node);
 }
 
-// src/components/icon-eye-off/eye-off.css
-var eye_off_default = `.eye-off-icon {
-  cursor: pointer;
-  user-select: none;
-  width: calc(16em / 14);
-  height: calc(16em / 14);
-  margin-inline-end: 0.125em;
-  vertical-align: bottom;
-  stroke: lightgray;
-  &:hover {
-    stroke: gray;
-  }
-  &.toggled {
-    stroke: red;
-  }
-}
-`;
-
-// src/components/icon-eye-off/eye-off.svg
-var eye_off_default2 = `<!-- https://lucide.dev/icons/eye-off -->
-<!--
-Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part
-of Feather (MIT). All other copyright (c) for Lucide are held by Lucide
-Contributors 2022.
--->
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off-icon lucide-eye-off">
-  <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
-  <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
-  <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
-  <path d="m2 2 20 20" />
-</svg>
-`;
-
-// src/components/icon-eye-off/eye-off.ts
-Async_WebPlatform_DOM_ReadyState_Callback({
-  async DOMContentLoaded() {
-    WebPlatform_DOM_Inject_CSS(eye_off_default);
-  }
-});
+// src/lib/create-icons.ts
 var parser = new DOMParser;
 function CreateEyeOffIcon() {
-  const svg = WebPlatform_Node_Reference_Class(parser.parseFromString(eye_off_default2, "text/html").querySelector("svg")).as(SVGElement);
+  const svg = WebPlatform_Node_Reference_Class(parser.parseFromString(eye_off_default, "text/html").querySelector("svg")).as(SVGElement);
   svg.classList.add("eye-off-icon");
   return svg;
 }
-
-// src/components/icon-heart/heart.css
-var heart_default = `.heart-icon {
-  cursor: pointer;
-  user-select: none;
-  width: calc(16em / 14);
-  height: calc(16em / 14);
-  margin-inline-end: 0.125em;
-  vertical-align: bottom;
-  stroke: none;
-  fill: lightgray;
-  &:hover {
-    fill: gray;
-  }
-  &.toggled {
-    fill: red;
-  }
-}
-`;
-
-// src/components/icon-heart/heart.svg
-var heart_default2 = `<!-- https://lucide.dev/icons/heart -->\r
-<!--\r
-Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part\r
-of Feather (MIT). All other copyright (c) for Lucide are held by Lucide\r
-Contributors 2022.\r
--->\r
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart">\r
-  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />\r
-</svg>\r
-`;
-
-// src/components/icon-heart/heart.ts
-Async_WebPlatform_DOM_ReadyState_Callback({
-  async DOMContentLoaded() {
-    WebPlatform_DOM_Inject_CSS(heart_default);
-  }
-});
-var parser2 = new DOMParser;
 function CreateHeartIcon() {
-  const svg = WebPlatform_Node_Reference_Class(parser2.parseFromString(heart_default2, "text/html").querySelector("svg")).as(SVGElement);
+  const svg = WebPlatform_Node_Reference_Class(parser.parseFromString(heart_default, "text/html").querySelector("svg")).as(SVGElement);
   svg.classList.add("heart-icon");
   return svg;
+}
+
+// src/lib/ericchase/Core_Console_Error.ts
+function Core_Console_Error(...items) {
+  console["error"](...items);
+}
+
+// src/lib/ericchase/Core_Map_Get_Or_Default.ts
+function Core_Map_Get_Or_Default(map, key, newValue) {
+  if (map.has(key)) {
+    return map.get(key);
+  }
+  const value = newValue();
+  map.set(key, value);
+  return value;
+}
+async function Async_Core_Map_Get_Or_Default(map, key, newValue) {
+  if (map.has(key)) {
+    return map.get(key);
+  }
+  const value = await newValue();
+  map.set(key, value);
+  return value;
 }
 
 // src/lib/ericchase/WebPlatform_DOM_Element_Added_Observer_Class.ts
@@ -253,191 +218,105 @@ function WebPlatform_DOM_Element_Added_Observer_Class(config) {
   return new Class_WebPlatform_DOM_Element_Added_Observer_Class(config);
 }
 
-// src/content_scripts/collections.css
-var collections_default = `div.game_cell.collection-hidden {
-  opacity: 10%;
-}
-div.game_cell.collection-hidden:hover {
-  opacity: 50%;
-}
-
-div.collections-manager-panel {
-  background-color: white;
-  border-radius: 0.5em;
-  border: 0.125em solid lightgray;
-  font-size: 1rem;
-  margin: 0.5em;
-  padding: 0.5em;
-  position: fixed;
-  top: 0;
-  z-index: 9999;
-  /* min-width: 10em; */
-  /* min-height: 5em; */
-  width: max-content;
-  /* height: 5em; */
-}
-
-@media screen and (width > 650px) and (width <= 960px) {
-  div.collections-manager-panel {
-    top: 2.75em;
-  }
-}
+// src/assets/game-cell-collections-manager.html
+var game_cell_collections_manager_default = `<div class="game-cell-collections-manager hidden">
+  <button id="export">export</button>
+  <button id="import">import</button>
+</div>
 `;
 
-// src/content_scripts/content.iife.ts
-var processed_set = new Set;
-Async_WebPlatform_DOM_ReadyState_Callback({
-  async DOMContentLoaded() {
-    console.log("DOMContentLoaded");
-    WebPlatform_DOM_Inject_CSS(collections_default);
-    WebPlatform_DOM_Element_Added_Observer_Class({
-      selector: "div.game_cell"
-    }).subscribe(async (div_game_cell) => {
-      if (div_game_cell instanceof HTMLDivElement) {
-        if (processed_set.has(div_game_cell) === false) {
-          processed_set.add(div_game_cell);
-          await async_processGameCell(div_game_cell);
-        }
-      }
-    });
-    WebPlatform_DOM_Element_Added_Observer_Class({
-      selector: 'meta[name="itch:path"]'
-    }).subscribe((meta_game_id) => {
-      if (meta_game_id instanceof HTMLMetaElement) {
-        const game_id = meta_game_id.getAttribute("content")?.slice("games/".length);
-        if (game_id !== undefined) {
-          processGamePage(game_id);
-        }
-      }
-    });
-  }
-});
-async function async_processGameCell(game_cell) {
-  console.log("async_processGameCell");
-  const game_id = game_cell.getAttribute("data-game_id") ?? undefined;
-  const div_game_title = WebPlatform_Node_Reference_Class(game_cell.querySelector("div.game_title")).tryAs(HTMLDivElement);
-  const a_title = WebPlatform_Node_Reference_Class(game_cell.querySelector("a.title")).tryAs(HTMLAnchorElement);
-  if (game_id !== undefined && div_game_title !== undefined && a_title !== undefined) {
-    const game_collection_set = await async_requestGetGameCollections({ game_id });
-    console.log({ game_id, game_collection_set });
-    if ((div_game_title.querySelector("& > svg.heart-icon") ?? undefined) === undefined) {
-      let in_favorites = game_collection_set.has("favorites");
-      const favorites_icon = CreateHeartIcon();
-      if (in_favorites === true) {
-        favorites_icon.classList.add("toggled");
-        game_cell.classList.add("collection-favorites");
-      }
-      favorites_icon.addEventListener("click", async () => {
-        if (in_favorites === true) {
-          in_favorites = false;
-          favorites_icon.classList.remove("toggled");
-          await async_requestRemoveGameFromCollection({ collection_name: "favorites", game_id });
-          game_cell.classList.remove("collection-favorites");
-        } else {
-          in_favorites = true;
-          favorites_icon.classList.add("toggled");
-          await async_requestAddGameToCollection({ collection_name: "favorites", game_id });
-          game_cell.classList.add("collection-favorites");
-        }
-      });
-      a_title.before(favorites_icon);
+// src/lib/ericchase/WebPlatform_Utility_Download.ts
+function WebPlatform_Utility_Download(data, filename) {
+  const dataurl = (() => {
+    if (data.blob !== undefined) {
+      return URL.createObjectURL(data.blob);
     }
-    if ((div_game_title.querySelector("& > svg.eye-off-icon") ?? undefined) === undefined) {
-      let in_hidden = game_collection_set.has("hidden");
-      const eye_off_icon = CreateEyeOffIcon();
-      if (in_hidden === true) {
-        eye_off_icon.classList.add("toggled");
-        game_cell.classList.add("collection-hidden");
-      }
-      eye_off_icon.addEventListener("click", async () => {
-        if (in_hidden === true) {
-          in_hidden = false;
-          eye_off_icon.classList.remove("toggled");
-          await async_requestRemoveGameFromCollection({ collection_name: "hidden", game_id });
-          game_cell.classList.remove("collection-hidden");
-        } else {
-          in_hidden = true;
-          eye_off_icon.classList.add("toggled");
-          await async_requestAddGameToCollection({ collection_name: "hidden", game_id });
-          game_cell.classList.add("collection-hidden");
-        }
-      });
-      a_title.before(eye_off_icon);
+    if (data.bytes !== undefined) {
+      return URL.createObjectURL(new Blob([data.bytes.slice()], { type: "application/octet-stream;charset=utf-8" }));
     }
+    if (data.json !== undefined) {
+      return URL.createObjectURL(new Blob([data.json], { type: "application/json;charset=utf-8" }));
+    }
+    if (data.text !== undefined) {
+      return URL.createObjectURL(new Blob([data.text], { type: "text/plain;charset=utf-8" }));
+    }
+    if (data.url !== undefined) {
+      return data.url;
+    }
+  })();
+  if (dataurl !== undefined) {
+    const anchor = document.createElement("a");
+    anchor.setAttribute("download", filename);
+    anchor.setAttribute("href", dataurl);
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
   }
 }
-function processGamePage(game_id) {
-  console.log("processGamePage");
-  WebPlatform_DOM_Element_Added_Observer_Class({
-    selector: "#user_tools"
-  }).subscribe(async (ul_user_tools, unsubscribe) => {
-    if (ul_user_tools instanceof HTMLUListElement) {
-      unsubscribe();
-      await async_showManagerPanel(ul_user_tools, game_id);
-    }
-  });
-}
-async function async_showManagerPanel(ul_user_tools, game_id) {
-  console.log("async_showManagerPanel");
-  const div_manager_panel = document.createElement("div");
-  div_manager_panel.classList.add("collections-manager-panel");
-  ul_user_tools.after(div_manager_panel);
-  const game_collection_set = await async_requestGetGameCollections({ game_id });
-  console.log({ game_id, game_collection_set });
-  {
-    let in_favorites = game_collection_set.has("favorites");
-    const favorites_icon = CreateHeartIcon();
-    if (in_favorites === true) {
-      favorites_icon.classList.add("toggled");
-    }
-    favorites_icon.addEventListener("click", async () => {
-      if (in_favorites === true) {
-        in_favorites = false;
-        favorites_icon.classList.remove("toggled");
-        await async_requestRemoveGameFromCollection({ collection_name: "favorites", game_id });
-      } else {
-        in_favorites = true;
-        favorites_icon.classList.add("toggled");
-        await async_requestAddGameToCollection({ collection_name: "favorites", game_id });
-      }
-    });
-    div_manager_panel.appendChild(favorites_icon);
-  }
-  {
-    let in_hidden = game_collection_set.has("hidden");
-    const eye_off_icon = CreateEyeOffIcon();
-    if (in_hidden === true) {
-      eye_off_icon.classList.add("toggled");
-    }
-    eye_off_icon.addEventListener("click", async () => {
-      if (in_hidden === true) {
-        in_hidden = false;
-        eye_off_icon.classList.remove("toggled");
-        await async_requestRemoveGameFromCollection({ collection_name: "hidden", game_id });
-      } else {
-        in_hidden = true;
-        eye_off_icon.classList.add("toggled");
-        await async_requestAddGameToCollection({ collection_name: "hidden", game_id });
-      }
-    });
-    div_manager_panel.appendChild(eye_off_icon);
-  }
-}
+
+// src/lib/StorageRequest.ts
 function sendMessage(message, cb) {
   chrome.runtime.sendMessage(message, cb);
+}
+function async_requestExportDatabase() {
+  return new Promise(async (resolve, reject) => {
+    sendMessage({ type: "REQUEST_EXPORT_DATABASE" }, (response) => {
+      switch (response.type) {
+        case "RESPONSE_DATABASE_JSON": {
+          return resolve(response.data.json);
+          break;
+        }
+        case "RESPONSE_ERROR": {
+          return reject(response.data.message);
+          break;
+        }
+        default: {
+          return reject(`incorrect event details: { type: ${response.type} }`);
+          break;
+        }
+      }
+    });
+  });
+}
+function async_requestImportDatabase(json) {
+  return new Promise(async (resolve, reject) => {
+    sendMessage({ type: "REQUEST_IMPORT_DATABASE", data: { json } }, (response) => {
+      switch (response.type) {
+        case "RESPONSE_OK": {
+          return resolve();
+          break;
+        }
+        case "RESPONSE_ERROR": {
+          return reject(response.data.message);
+          break;
+        }
+        default: {
+          return reject(`incorrect event details: { type: ${response.type} }`);
+          break;
+        }
+      }
+    });
+  });
 }
 function async_requestGetGameCollections(args) {
   return new Promise(async (resolve, reject) => {
     sendMessage({ type: "REQUEST_GET_GAME_COLLECTIONS", data: { game_id: args.game_id } }, (response) => {
+      console.log("async_requestGetGameCollections");
+      console.log(response.type);
       switch (response.type) {
-        case "RESPONSE_GAME_COLLECTIONS":
+        case "RESPONSE_GAME_COLLECTIONS": {
+          console.log(response.data);
           return resolve(new Set(response.data.collection_names));
           break;
-        case "RESPONSE_ERROR":
+        }
+        case "RESPONSE_ERROR": {
           return reject(response.data.message);
           break;
-        default:
+        }
+        default: {
           return reject(`incorrect event details: { type: ${response.type} }`);
+          break;
+        }
       }
     });
   });
@@ -446,14 +325,18 @@ async function async_requestAddGameToCollection(args) {
   return new Promise(async (resolve, reject) => {
     sendMessage({ type: "REQUEST_ADD_GAME_TO_COLLECTION", data: { collection_name: args.collection_name, game_id: args.game_id } }, (response) => {
       switch (response.type) {
-        case "RESPONSE_OK":
+        case "RESPONSE_OK": {
           return resolve();
           break;
-        case "RESPONSE_ERROR":
+        }
+        case "RESPONSE_ERROR": {
           return reject(response.data.message);
           break;
-        default:
+        }
+        default: {
           return reject(`incorrect event details: { type: ${response.type} }`);
+          break;
+        }
       }
     });
   });
@@ -462,17 +345,281 @@ async function async_requestRemoveGameFromCollection(args) {
   return new Promise(async (resolve, reject) => {
     sendMessage({ type: "REQUEST_REMOVE_GAME_FROM_COLLECTION", data: { collection_name: args.collection_name, game_id: args.game_id } }, (response) => {
       switch (response.type) {
-        case "RESPONSE_OK":
+        case "RESPONSE_OK": {
           return resolve();
           break;
-        case "RESPONSE_ERROR":
+        }
+        case "RESPONSE_ERROR": {
           return reject(response.data.message);
           break;
-        default:
+        }
+        default: {
           return reject(`incorrect event details: { type: ${response.type} }`);
+          break;
+        }
       }
     });
   });
 }
+
+// src/lib/game-cell-collections-manager.ts
+var div_manager = undefined;
+var parser2 = new DOMParser;
+function createGameCellCollectionsManager() {
+  const div_manager2 = WebPlatform_Node_Reference_Class(parser2.parseFromString(game_cell_collections_manager_default, "text/html").querySelector("div")).as(HTMLDivElement);
+  const button_export = WebPlatform_Node_Reference_Class(div_manager2.querySelector("#export")).as(HTMLButtonElement);
+  button_export.addEventListener("click", async () => {
+    WebPlatform_Utility_Download({ json: await async_requestExportDatabase() }, "collections_database.json");
+  });
+  const button_import = WebPlatform_Node_Reference_Class(div_manager2.querySelector("#import")).as(HTMLButtonElement);
+  button_import.addEventListener("click", async () => {
+    const json = await Async_WebPlatform_Utility_Upload({ ext_or_mime: "application/json" });
+    if (json !== undefined) {
+      await async_requestImportDatabase(json);
+    }
+  });
+  return div_manager2;
+}
+function showGameCellCollectionsManager() {
+  if (div_manager === undefined) {
+    div_manager = createGameCellCollectionsManager();
+    document.body.appendChild(div_manager);
+  }
+  if (div_manager !== undefined) {
+    div_manager.classList.remove("hidden");
+  }
+}
+async function Async_WebPlatform_Utility_Upload(options) {
+  return new Promise((resolve, reject) => {
+    options ??= {};
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    if (options.ext_or_mime !== undefined) {
+      input.setAttribute("accept", options.ext_or_mime);
+    }
+    input.style.setProperty("display", "none");
+    input.addEventListener("change", async () => {
+      resolve(await input.files?.[0]?.text());
+    });
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+  });
+}
+
+// src/lib/game-cell.ts
+var game_cell_selector = "div.game_cell";
+var game_cell_thumbnail_container_selector = "div:is(.bordered,.game_thumb):has(a:is(.game_thumb,a.game_link))";
+var game_cell_title_container_selector = "div:is(.game_title,.label):has(a.title)";
+var game_cell_title_selector = "a.title";
+var game_id_dataset_key = "data-game_id";
+var game_cell_set = new Set;
+var game_id_to_cells_map = new Map;
+function setupGameCellObserver() {
+  WebPlatform_DOM_Element_Added_Observer_Class({
+    selector: game_cell_selector
+  }).subscribe(async (div_game_cell) => {
+    if (div_game_cell instanceof HTMLDivElement) {
+      await async_processGameCell(div_game_cell);
+    }
+  });
+}
+async function async_processGameCell(game_cell) {
+  const game_id = game_cell.getAttribute(game_id_dataset_key) ?? undefined;
+  if (game_id !== undefined) {
+    await async_setupGameCell(game_cell, game_id);
+  }
+}
+async function async_setupGameCell(game_cell, game_id) {
+  if (game_cell_set.has(game_cell) === false) {
+    try {
+      game_cell_set.add(game_cell);
+      Core_Map_Get_Or_Default(game_id_to_cells_map, game_id, () => []).push(game_cell);
+      const a_title = WebPlatform_Node_Reference_Class(game_cell.querySelector(game_cell_title_selector)).as(HTMLAnchorElement);
+      const div_thumbnail_container = WebPlatform_Node_Reference_Class(game_cell.querySelector(game_cell_thumbnail_container_selector)).as(HTMLDivElement);
+      const game_collection_set = await async_requestGetGameCollections({ game_id });
+      const createCollectionIcon = (collection_name, constructor) => {
+        const icon = constructor();
+        a_title.before(icon);
+        icon.addEventListener("click", async () => {
+          switch (updateGameCells({ collection_name, game_id })) {
+            case true:
+              await async_requestAddGameToCollection({ collection_name, game_id });
+              break;
+            case false:
+              await async_requestRemoveGameFromCollection({ collection_name, game_id });
+              break;
+          }
+        });
+        updateGameCells({ collection_name, game_id }, game_collection_set.has(collection_name));
+      };
+      createCollectionIcon("favorites", CreateHeartIcon);
+      createCollectionIcon("hidden", CreateEyeOffIcon);
+      {
+        const button_open_manager = document.createElement("button");
+        button_open_manager.textContent = "manager";
+        button_open_manager.style.position = "absolute";
+        button_open_manager.style.bottom = "0.5em";
+        button_open_manager.style.right = "0.5em";
+        button_open_manager.addEventListener("click", () => {
+          showGameCellCollectionsManager();
+        });
+        div_thumbnail_container.appendChild(button_open_manager);
+      }
+    } catch (error) {
+      Core_Console_Error(error);
+    }
+  }
+}
+function updateGameCells(args, force_value) {
+  for (const game_cell of game_id_to_cells_map.get(args.game_id) ?? []) {
+    try {
+      const div_title_container = WebPlatform_Node_Reference_Class(game_cell.querySelector(game_cell_title_container_selector)).as(HTMLElement);
+      const updateCollectionIcon = (collection_name, icon) => {
+        if (icon.classList.contains("toggled")) {
+          if (force_value === false || force_value === undefined) {
+            icon.classList.remove("toggled");
+            game_cell.classList.remove(`collection-${collection_name}`);
+            return false;
+          }
+          return true;
+        } else {
+          if (force_value === true || force_value === undefined) {
+            icon.classList.add("toggled");
+            game_cell.classList.add(`collection-${collection_name}`);
+            return true;
+          }
+          return false;
+        }
+      };
+      switch (args.collection_name) {
+        case "favorites":
+          return updateCollectionIcon(args.collection_name, WebPlatform_Node_Reference_Class(div_title_container.querySelector("&>svg.heart-icon")).as(SVGElement));
+        case "hidden":
+          return updateCollectionIcon(args.collection_name, WebPlatform_Node_Reference_Class(div_title_container.querySelector("&>svg.eye-off-icon")).as(SVGElement));
+      }
+    } catch (error) {
+      Core_Console_Error(error);
+    }
+  }
+}
+
+// src/assets/game-page-collections-manager.html
+var game_page_collections_manager_default = `<div class="game-page-collections-manager">
+  <button id="export">export</button>
+  <button id="import">import</button>
+</div>
+`;
+
+// src/lib/game-page-collections-manager.ts
+var game_manager_set = new Set;
+var game_id_to_manager_map = new Map;
+var parser3 = new DOMParser;
+async function async_createGamePageCollectionsManager(game_id) {
+  const div_manager2 = WebPlatform_Node_Reference_Class(parser3.parseFromString(game_page_collections_manager_default, "text/html").querySelector("div")).as(HTMLDivElement);
+  const game_collection_set = await async_requestGetGameCollections({ game_id });
+  const createCollectionIcon = (collection_name, constructor) => {
+    const icon = constructor();
+    div_manager2.appendChild(icon);
+    icon.addEventListener("click", async () => {
+      switch (updateGamePageCollectionsManager({ collection_name, game_id })) {
+        case true:
+          await async_requestAddGameToCollection({ collection_name, game_id });
+          break;
+        case false:
+          await async_requestRemoveGameFromCollection({ collection_name, game_id });
+          break;
+      }
+    });
+    updateGamePageCollectionsManager({ collection_name, game_id }, game_collection_set.has(collection_name));
+  };
+  createCollectionIcon("favorites", CreateHeartIcon);
+  createCollectionIcon("hidden", CreateEyeOffIcon);
+  return div_manager2;
+}
+async function async_showGamePageCollectionsManager(ul_user_tools, game_id) {
+  const div_manager2 = await Async_Core_Map_Get_Or_Default(game_id_to_manager_map, game_id, async () => {
+    const div_manager3 = await async_createGamePageCollectionsManager(game_id);
+    game_manager_set.add(div_manager3);
+    return div_manager3;
+  });
+  ul_user_tools.after(div_manager2);
+}
+function updateGamePageCollectionsManager(args, force_value) {
+  const div_manager2 = game_id_to_manager_map.get(args.game_id);
+  if (div_manager2 !== undefined) {
+    try {
+      const updateCollectionIcon = (icon) => {
+        if (icon.classList.contains("toggled")) {
+          if (force_value === false || force_value === undefined) {
+            icon.classList.remove("toggled");
+            return false;
+          }
+          return true;
+        } else {
+          if (force_value === true || force_value === undefined) {
+            icon.classList.add("toggled");
+            return true;
+          }
+          return false;
+        }
+      };
+      switch (args.collection_name) {
+        case "favorites":
+          return updateCollectionIcon(WebPlatform_Node_Reference_Class(div_manager2.querySelector("&>svg.heart-icon")).as(SVGElement));
+        case "hidden":
+          return updateCollectionIcon(WebPlatform_Node_Reference_Class(div_manager2.querySelector("&>svg.eye-off-icon")).as(SVGElement));
+      }
+    } catch (error) {
+      Core_Console_Error(error);
+    }
+  }
+}
+
+// src/lib/game-page.ts
+function setupGamePageObserver() {
+  WebPlatform_DOM_Element_Added_Observer_Class({
+    selector: 'meta[name="itch:path"]'
+  }).subscribe((meta_game_id) => {
+    if (meta_game_id instanceof HTMLMetaElement) {
+      const game_id = meta_game_id.getAttribute("content")?.slice("games/".length);
+      if (game_id !== undefined) {
+        processGamePage(game_id);
+      }
+    }
+  });
+}
+function processGamePage(game_id) {
+  WebPlatform_DOM_Element_Added_Observer_Class({
+    selector: "#user_tools"
+  }).subscribe(async (ul_user_tools, unsubscribe) => {
+    if (ul_user_tools instanceof HTMLUListElement) {
+      unsubscribe();
+      await async_setupGamePage(ul_user_tools, game_id);
+    }
+  });
+}
+async function async_setupGamePage(ul_user_tools, game_id) {
+  await async_showGamePageCollectionsManager(ul_user_tools, game_id);
+}
+
+// src/content_scripts/content.iife.ts
+Async_WebPlatform_DOM_ReadyState_Callback({
+  async DOMContentLoaded() {
+    setupGameCellObserver();
+    setupGamePageObserver();
+  }
+});
+function updateIcons(args, force_value) {
+  updateGameCells(args, force_value);
+  updateGamePageCollectionsManager(args, force_value);
+}
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "REFRESH_UI") {
+    for (const item of message.data) {
+      updateIcons(item, item.contains);
+    }
+  }
+});
 
 })();

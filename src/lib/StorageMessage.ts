@@ -1,5 +1,14 @@
 export type StorageMessage =
   | {
+      type: 'REQUEST_EXPORT_DATABASE';
+    }
+  | {
+      type: 'REQUEST_IMPORT_DATABASE';
+      data: {
+        json: string;
+      };
+    }
+  | {
       type: 'REQUEST_GET_GAME_COLLECTIONS';
       data: {
         game_id: string;
@@ -20,9 +29,15 @@ export type StorageMessage =
       };
     }
   | {
+      type: 'RESPONSE_DATABASE_JSON';
+      data: {
+        json: string;
+      };
+    }
+  | {
       type: 'RESPONSE_GAME_COLLECTIONS';
       data: {
-        collection_names: Set<string>;
+        collection_names: string[];
       };
     }
   | {
@@ -31,5 +46,4 @@ export type StorageMessage =
     }
   | {
       type: 'RESPONSE_OK';
-      data: {};
     };
