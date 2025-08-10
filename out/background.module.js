@@ -5955,7 +5955,17 @@ if (import_dexie.default.semVer !== Dexie.semVer) {
 }
 var import_wrapper_default = Dexie;
 
-// src/database/collections.ts
+// src/lib/ericchase/Core_Console_Error.ts
+function Core_Console_Error(...items) {
+  console["error"](...items);
+}
+
+// src/lib/ericchase/Core_Promise_Orphan.ts
+function Core_Promise_Orphan(promise) {}
+
+// src/background.module.ts
+import { BrowserName } from "./lib/lib.env.module.js";
+
 class CollectionsDB extends import_wrapper_default {
   games;
   collections;
@@ -5974,40 +5984,6 @@ class CollectionsDB extends import_wrapper_default {
   }
 }
 var db = new CollectionsDB;
-async function async_initCollectionsDatabase() {
-  await db.open();
-}
-async function async_addGameToCollection(args) {
-  await db.transaction("rw", db.games, db.collections, db.collectionGames, async () => {
-    if (await db.collections.get(args.collection_name) === undefined) {
-      await db.collections.put({ name: args.collection_name });
-    }
-    if (await db.games.get(args.game_id) === undefined) {
-      await db.games.put({ id: args.game_id });
-    }
-    await db.collectionGames.put({ collectionName: args.collection_name, gameId: args.game_id });
-  });
-}
-async function async_getGameCollections(args) {
-  const collectionGames_records = await db.collectionGames.where("gameId").equals(args.game_id).toArray();
-  const collection_names = collectionGames_records.map((record) => record.collectionName);
-  if (collection_names.length === 0) {
-    return new Set;
-  }
-  const collections_records = await db.collections.where("name").anyOf(collection_names).toArray();
-  return new Set(collections_records.map((record) => record.name));
-}
-async function async_removeGameFromCollection(args) {
-  await db.transaction("rw", db.games, db.collectionGames, async () => {
-    await db.collectionGames.delete([args.collection_name, args.game_id]);
-    if (await db.collectionGames.where("gameId").equals(args.game_id).count() === 0) {
-      await db.games.delete(args.game_id);
-    }
-  });
-}
-
-// src/background.module.ts
-import { BrowserName } from "./lib/lib.env.module.js";
 chrome.action.onClicked.addListener(async (currentTab) => {});
 if (BrowserName === "chrome") {
   chrome.contextMenus.create({
@@ -6047,30 +6023,136 @@ chrome.contextMenus.onClicked.addListener((info, currentTab) => {
       break;
   }
 });
-await async_initCollectionsDatabase();
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  Core_Promise_Orphan(async_onMessageListener(message, sendResponse));
+  return true;
+});
+async function async_onMessageListener(message, sendResponse) {
   try {
     switch (message.type) {
+      case "REQUEST_EXPORT_DATABASE": {
+        const json = await async_exportDatabase();
+        if (json !== undefined) {
+          console.log("return 1");
+          const response = { type: "RESPONSE_DATABASE_JSON", data: { json } };
+          return sendResponse(response);
+        } else {
+          console.log("return 2");
+          const response = { type: "RESPONSE_ERROR", data: { message: "Failed to export database" } };
+          return sendResponse(response);
+        }
+        break;
+      }
+      case "REQUEST_IMPORT_DATABASE": {
+        await async_importDatabase(message.data.json);
+        broadcastUIRefresh((await async_getAllGameCollections()).map((record) => ({ ...record, contains: true })));
+        console.log("return 3");
+        const response = { type: "RESPONSE_OK" };
+        return sendResponse(response);
+        break;
+      }
       case "REQUEST_GET_GAME_COLLECTIONS": {
-        const game_collection_set = await async_getGameCollections({ game_id: message.data.game_id });
-        sendResponse({ type: "RESPONSE_GAME_COLLECTIONS", data: { collection_names: [...game_collection_set] } });
+        const response = { type: "RESPONSE_GAME_COLLECTIONS", data: { collection_names: await async_getGameCollections(message.data) } };
+        return sendResponse(response);
         break;
       }
       case "REQUEST_ADD_GAME_TO_COLLECTION": {
-        await async_addGameToCollection({ collection_name: message.data.collection_name, game_id: message.data.game_id });
-        sendResponse({ type: "RESPONSE_OK", data: {} });
+        await async_addGameToCollection(message.data);
+        broadcastUIRefresh([{ collection_name: message.data.collection_name, game_id: message.data.game_id, contains: true }]);
+        console.log("return 5");
+        const response = { type: "RESPONSE_OK" };
+        return sendResponse(response);
         break;
       }
       case "REQUEST_REMOVE_GAME_FROM_COLLECTION": {
-        await async_removeGameFromCollection({ collection_name: message.data.collection_name, game_id: message.data.game_id });
-        sendResponse({ type: "RESPONSE_OK", data: {} });
+        await async_removeGameFromCollection(message.data);
+        broadcastUIRefresh([{ collection_name: message.data.collection_name, game_id: message.data.game_id, contains: false }]);
+        console.log("return 6");
+        const response = { type: "RESPONSE_OK" };
+        return sendResponse(response);
         break;
       }
-      default:
-        sendResponse({ type: "RESPONSE_ERROR", data: { message: "Unknown message type" } });
+      default: {
+        console.log("return 7");
+        const response = { type: "RESPONSE_ERROR", data: { message: "Unknown message type" } };
+        return sendResponse(response);
+        break;
+      }
     }
   } catch (error) {
-    sendResponse({ type: "RESPONSE_ERROR", data: { message: error.message } });
+    console.log("return 8");
+    const response = { type: "RESPONSE_ERROR", data: { message: error.message } };
+    return sendResponse(response);
   }
-  return true;
-});
+}
+function broadcastUIRefresh(data) {
+  chrome.tabs.query({}, (tabs) => {
+    for (const tab of tabs) {
+      if (tab.id && tab.url && new URL(tab.url).hostname.endsWith("itch.io")) {
+        chrome.tabs.sendMessage(tab.id, { type: "REFRESH_UI", data });
+      }
+    }
+  });
+}
+async function async_addGameToCollection(args) {
+  await db.transaction("rw", db.games, db.collections, db.collectionGames, async () => {
+    if (await db.collections.get(args.collection_name) === undefined) {
+      await db.collections.put({ name: args.collection_name });
+    }
+    if (await db.games.get(args.game_id) === undefined) {
+      await db.games.put({ id: args.game_id });
+    }
+    await db.collectionGames.put({ collectionName: args.collection_name, gameId: args.game_id });
+  });
+}
+async function async_getAllGameCollections() {
+  return (await db.collectionGames.toArray()).map(({ collectionName, gameId }) => ({ collection_name: collectionName, game_id: gameId }));
+}
+async function async_getGameCollections(args) {
+  const collectionGames_records = await db.collectionGames.where("gameId").equals(args.game_id).toArray();
+  const collection_names = collectionGames_records.map((record) => record.collectionName);
+  if (collection_names.length === 0) {
+    return [];
+  }
+  const collections_records = await db.collections.where("name").anyOf(collection_names).toArray();
+  return collections_records.map((record) => record.name);
+}
+async function async_removeGameFromCollection(args) {
+  await db.transaction("rw", db.games, db.collectionGames, async () => {
+    await db.collectionGames.delete([args.collection_name, args.game_id]);
+    if (await db.collectionGames.where("gameId").equals(args.game_id).count() === 0) {
+      await db.games.delete(args.game_id);
+    }
+  });
+}
+async function async_exportDatabase() {
+  try {
+    const data = {
+      games: await db.games.toArray(),
+      collections: await db.collections.toArray(),
+      collectionGames: await db.collectionGames.toArray()
+    };
+    return JSON.stringify(data);
+  } catch (error) {
+    Core_Console_Error(error);
+  }
+  return "{}";
+}
+async function async_importDatabase(json) {
+  try {
+    const data = JSON.parse(json);
+    await db.transaction("rw", db.games, db.collections, db.collectionGames, async () => {
+      if (Array.isArray(data.games)) {
+        await db.games.bulkPut(data.games);
+      }
+      if (Array.isArray(data.collections)) {
+        await db.collections.bulkPut(data.collections);
+      }
+      if (Array.isArray(data.collectionGames)) {
+        await db.collectionGames.bulkPut(data.collectionGames);
+      }
+    });
+  } catch (error) {
+    Core_Console_Error(error);
+  }
+}

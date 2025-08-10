@@ -1,6 +1,35 @@
 ## About
 
+https://github.com/ericchase/browserextension--improved-itch.io-collections-manager
+
 An improved Collections manager for https://itch.io/.
+
+### Feature Set
+
+Favorites Collection
+
+- A default collection that adds a heart icon to each game cell and game page.
+- Games in this collection will have red heart icons on their game cells.
+
+Hidden Collection
+
+- A default collection that adds an eyeball icon to each game cell and game page.
+- Games in this collection will have red eyeball icons on their game cells, and their corresponding game cells will become transparent. When hovered, the transparency will temporarily lessen.
+
+---
+
+![favorited and hidden game cells](example-game-cells.png)
+
+---
+
+![hidden game cell hovered](example-game-cell-hovered.png)
+
+---
+
+Collections Manager (WIP)
+
+- Export button to save the collections database to a file.
+- Import button to open an exported database file and merge the entries into the database.
 
 ## Build Tools V4
 

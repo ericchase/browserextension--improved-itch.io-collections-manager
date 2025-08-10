@@ -12,13 +12,12 @@ import { Step_FS_Clean_Directory } from './core/step/Step_FS_Clean_Directory.js'
 import { Processor_Browser_Extension_Update_Manifest_Cache } from './lib-browser-extension/processors/Processor_Browser_Extension_Update_Manifest_Cache.js';
 import { Step_Browser_Extension_Bundle } from './lib-browser-extension/steps/Step_Browser_Extension_Bundle.js';
 
-// Use command line arguments to set dev mode.
+const manifest_pattern = `${Builder.Dir.Src}/manifest.ts`;
+
 if (BunPlatform_Args_Has('--dev')) {
   Builder.SetMode(Builder.MODE.DEV);
 }
 Builder.SetVerbosity(Builder.VERBOSITY._1_LOG);
-
-// These steps are run during the startup phase only.
 Builder.SetStartUpSteps(
   Step_Dev_Project_Update_Config({ project_path: './' }),
   Step_Bun_Run({ cmd: ['bun', 'update', '--latest'], showlogs: false }),
@@ -27,50 +26,18 @@ Builder.SetStartUpSteps(
   Step_Dev_Format({ showlogs: false }),
   //
 );
-
-// These steps are run before each processing phase.
-Builder.SetBeforeProcessingSteps();
-
-// Basic setup for a TypeScript powered project. TypeScript files that match
-// "*.module.ts" and "*.iife.ts" are bundled and written to the out folder.
-// The other TypeScript files do not produce bundles. Module ("*.module.ts")
-// files will not bundle other module files. Instead, they'll import whatever
-// exports are needed from other module files. IIFE ("*.iife.ts") files, on
-// the other hand, produce fully contained bundles. They do not import anything
-// from anywhere. Use them accordingly.
-
-// HTML custom components are a lightweight alternative to web components made
-// possible by the processors below.
-
-// The processors are run for every file that added them during every
-// processing phase.
-
-const manifest_pattern = `${Builder.Dir.Src}/manifest.ts`;
-
 Builder.SetProcessorModules(
-  // Process the custom html components.
   Processor_HTML_Custom_Component_Processor(),
-  // Transpile the manifest file; no need to write it out.
-  Processor_TypeScript_Generic_Transpiler({ include_patterns: [manifest_pattern] }, { target: 'browser' }),
-  Processor_Browser_Extension_Update_Manifest_Cache({ manifest_path: manifest_pattern }),
-  // Bundle the modules.
   Processor_TypeScript_Generic_Bundler({ target: 'browser' }),
-  // Write non-bundle files and non-library files.
-  Processor_Set_Writable({ include_patterns: ['**/*'], exclude_patterns: ['**/*{.bat,.svg}'] }),
+  Processor_Browser_Extension_Update_Manifest_Cache({ manifest_path: manifest_pattern }),
+  Processor_TypeScript_Generic_Transpiler({ include_patterns: [manifest_pattern] }, { target: 'browser' }),
   Processor_Set_Writable({ include_patterns: [manifest_pattern], value: false }),
+  Processor_Set_Writable({ include_patterns: ['**/*{.css,.html,.png}'], value: true }),
   //
 );
-
-// These steps are run after each processing phase.
 Builder.SetAfterProcessingSteps(
-  // During "dev" mode (when "--dev" is passed as an argument), the server
-  // will start running with hot refreshing if enabled in your index file.
-  Step_Dev_Server(),
   Step_Browser_Extension_Bundle({ release_dir: 'release' }),
+  Step_Dev_Server(),
   //
 );
-
-// These steps are run during the shutdown phase only.
-Builder.SetCleanUpSteps();
-
 await Builder.Start();

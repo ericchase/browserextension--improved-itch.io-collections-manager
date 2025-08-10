@@ -1,0 +1,15 @@
+div.game-cell-collections-manager {
+  background-color: white;
+  border-radius: 0.5em;
+  border: 0.125em solid red;
+  font-size: 1rem;
+  padding: 0.5em;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+div.game-cell-collections-manager.hidden {
+  display: none;
+}

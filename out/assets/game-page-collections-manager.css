@@ -1,11 +1,4 @@
-div.game_cell.collection-hidden {
-  opacity: 10%;
-}
-div.game_cell.collection-hidden:hover {
-  opacity: 50%;
-}
-
-div.collections-manager-panel {
+div.game-page-collections-manager {
   background-color: white;
   border-radius: 0.5em;
   border: 0.125em solid lightgray;
@@ -22,7 +15,7 @@ div.collections-manager-panel {
 }
 
 @media screen and (width > 650px) and (width <= 960px) {
-  div.collections-manager-panel {
+  div.game-page-collections-manager {
     top: 2.75em;
   }
 }
