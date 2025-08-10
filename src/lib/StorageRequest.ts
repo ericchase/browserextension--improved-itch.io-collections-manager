@@ -49,11 +49,8 @@ export function async_requestImportDatabase(json: string): Promise<void> {
 export function async_requestGetGameCollections(args: { game_id: string }): Promise<Set<string>> {
   return new Promise(async (resolve, reject) => {
     sendMessage({ type: 'REQUEST_GET_GAME_COLLECTIONS', data: { game_id: args.game_id } }, (response: StorageMessage) => {
-      console.log('async_requestGetGameCollections');
-      console.log(response.type);
       switch (response.type) {
         case 'RESPONSE_GAME_COLLECTIONS': {
-          console.log(response.data);
           return resolve(new Set(response.data.collection_names));
           break;
         }

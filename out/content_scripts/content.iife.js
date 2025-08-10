@@ -293,11 +293,8 @@ function async_requestImportDatabase(json) {
 function async_requestGetGameCollections(args) {
   return new Promise(async (resolve, reject) => {
     sendMessage({ type: "REQUEST_GET_GAME_COLLECTIONS", data: { game_id: args.game_id } }, (response) => {
-      console.log("async_requestGetGameCollections");
-      console.log(response.type);
       switch (response.type) {
         case "RESPONSE_GAME_COLLECTIONS": {
-          console.log(response.data);
           return resolve(new Set(response.data.collection_names));
           break;
         }

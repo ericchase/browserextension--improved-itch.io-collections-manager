@@ -6033,11 +6033,9 @@ async function async_onMessageListener(message, sendResponse) {
       case "REQUEST_EXPORT_DATABASE": {
         const json = await async_exportDatabase();
         if (json !== undefined) {
-          console.log("return 1");
           const response = { type: "RESPONSE_DATABASE_JSON", data: { json } };
           return sendResponse(response);
         } else {
-          console.log("return 2");
           const response = { type: "RESPONSE_ERROR", data: { message: "Failed to export database" } };
           return sendResponse(response);
         }
@@ -6046,7 +6044,6 @@ async function async_onMessageListener(message, sendResponse) {
       case "REQUEST_IMPORT_DATABASE": {
         await async_importDatabase(message.data.json);
         broadcastUIRefresh((await async_getAllGameCollections()).map((record) => ({ ...record, contains: true })));
-        console.log("return 3");
         const response = { type: "RESPONSE_OK" };
         return sendResponse(response);
         break;
@@ -6059,7 +6056,6 @@ async function async_onMessageListener(message, sendResponse) {
       case "REQUEST_ADD_GAME_TO_COLLECTION": {
         await async_addGameToCollection(message.data);
         broadcastUIRefresh([{ collection_name: message.data.collection_name, game_id: message.data.game_id, contains: true }]);
-        console.log("return 5");
         const response = { type: "RESPONSE_OK" };
         return sendResponse(response);
         break;
@@ -6067,20 +6063,17 @@ async function async_onMessageListener(message, sendResponse) {
       case "REQUEST_REMOVE_GAME_FROM_COLLECTION": {
         await async_removeGameFromCollection(message.data);
         broadcastUIRefresh([{ collection_name: message.data.collection_name, game_id: message.data.game_id, contains: false }]);
-        console.log("return 6");
         const response = { type: "RESPONSE_OK" };
         return sendResponse(response);
         break;
       }
       default: {
-        console.log("return 7");
         const response = { type: "RESPONSE_ERROR", data: { message: "Unknown message type" } };
         return sendResponse(response);
         break;
       }
     }
   } catch (error) {
-    console.log("return 8");
     const response = { type: "RESPONSE_ERROR", data: { message: error.message } };
     return sendResponse(response);
   }
