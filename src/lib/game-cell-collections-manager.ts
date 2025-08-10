@@ -6,7 +6,7 @@ import { async_requestExportDatabase, async_requestImportDatabase } from './Stor
 let div_manager: HTMLDivElement | undefined = undefined;
 const parser = new DOMParser();
 
-export function createGameCellCollectionsManager() {
+export function createGameCellCollectionsManager(): HTMLDivElement {
   const div_manager = WebPlatform_Node_Reference_Class(parser.parseFromString(collectionsmanagerhtml, 'text/html').querySelector('div')).as(HTMLDivElement);
   const button_export = WebPlatform_Node_Reference_Class(div_manager.querySelector('#export')).as(HTMLButtonElement);
   button_export.addEventListener('click', async () => {
@@ -22,7 +22,7 @@ export function createGameCellCollectionsManager() {
   return div_manager;
 }
 
-export function showGameCellCollectionsManager() {
+export function showGameCellCollectionsManager(): void {
   if (div_manager === undefined) {
     div_manager = createGameCellCollectionsManager();
     document.body.appendChild(div_manager);

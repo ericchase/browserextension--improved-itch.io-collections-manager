@@ -1,6 +1,6 @@
 import { StorageMessage } from './StorageMessage.js';
 
-export function sendMessage(message: StorageMessage, cb: (response: StorageMessage) => void) {
+export function sendMessage(message: StorageMessage, cb: (response: StorageMessage) => void): void {
   chrome.runtime.sendMessage(message, cb);
 }
 
