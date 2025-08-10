@@ -1,6 +1,7 @@
 import collectionsmanagerhtml from '../assets/game-cell-collections-manager.html' with { type: 'text' };
 import { WebPlatform_Node_Reference_Class } from './ericchase/WebPlatform_Node_Reference_Class.js';
 import { WebPlatform_Utility_Download } from './ericchase/WebPlatform_Utility_Download.js';
+import { Async_WebPlatform_Utility_Upload } from './ericchase/WebPlatform_Utility_Upload.js';
 import { async_requestExportDatabase, async_requestImportDatabase } from './StorageRequest.js';
 
 let div_manager: HTMLDivElement | undefined = undefined;
@@ -30,22 +31,4 @@ export function showGameCellCollectionsManager(): void {
   if (div_manager !== undefined) {
     div_manager.classList.remove('hidden');
   }
-}
-
-async function Async_WebPlatform_Utility_Upload(options?: { ext_or_mime?: string }): Promise<string | undefined> {
-  return new Promise<string | undefined>((resolve, reject) => {
-    options ??= {};
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    if (options.ext_or_mime !== undefined) {
-      input.setAttribute('accept', options.ext_or_mime);
-    }
-    input.style.setProperty('display', 'none');
-    input.addEventListener('change', async () => {
-      resolve(await input.files?.[0]?.text());
-    });
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
-  });
 }

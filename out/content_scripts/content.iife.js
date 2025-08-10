@@ -246,6 +246,28 @@ function WebPlatform_Utility_Download(data, filename) {
   }
 }
 
+// src/lib/ericchase/WebPlatform_Utility_Upload.ts
+async function Async_WebPlatform_Utility_Upload(options) {
+  return new Promise((resolve, reject) => {
+    options ??= {};
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    if (options.ext_or_mime !== undefined) {
+      input.setAttribute("accept", options.ext_or_mime);
+    }
+    input.style.setProperty("display", "none");
+    input.addEventListener("error", async (event) => {
+      reject(event.error);
+    });
+    input.addEventListener("change", async () => {
+      resolve(await input.files?.[0]?.text());
+    });
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+  });
+}
+
 // src/lib/StorageRequest.ts
 function sendMessage(message, cb) {
   chrome.runtime.sendMessage(message, cb);
@@ -378,23 +400,6 @@ function showGameCellCollectionsManager() {
     div_manager.classList.remove("hidden");
   }
 }
-async function Async_WebPlatform_Utility_Upload(options) {
-  return new Promise((resolve, reject) => {
-    options ??= {};
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    if (options.ext_or_mime !== undefined) {
-      input.setAttribute("accept", options.ext_or_mime);
-    }
-    input.style.setProperty("display", "none");
-    input.addEventListener("change", async () => {
-      resolve(await input.files?.[0]?.text());
-    });
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
-  });
-}
 
 // src/lib/game-cell.ts
 var game_cell_selector = "div.game_cell";
@@ -495,8 +500,7 @@ function updateGameCells(args, force_value) {
 
 // src/assets/game-page-collections-manager.html
 var game_page_collections_manager_default = `<div class="game-page-collections-manager">
-  <button id="export">export</button>
-  <button id="import">import</button>
+  <div class="main"></div>
 </div>
 `;
 
@@ -510,12 +514,13 @@ async function async_createGamePageCollectionsManager(game_id) {
     return div_manager2;
   } else {
     const div_manager3 = WebPlatform_Node_Reference_Class(parser3.parseFromString(game_page_collections_manager_default, "text/html").querySelector("div")).as(HTMLDivElement);
+    const div_manager_panel = WebPlatform_Node_Reference_Class(div_manager3.querySelector("& > div.main")).as(HTMLDivElement);
     game_manager_set.add(div_manager3);
     game_id_to_manager_map.set(game_id, div_manager3);
     const game_collection_set = await async_requestGetGameCollections({ game_id });
     const createCollectionIcon = (collection_name, constructor) => {
       const icon = constructor();
-      div_manager3.appendChild(icon);
+      div_manager_panel.appendChild(icon);
       icon.addEventListener("click", async () => {
         switch (updateGamePageCollectionsManager({ collection_name, game_id })) {
           case true:
@@ -558,9 +563,9 @@ function updateGamePageCollectionsManager(args, force_value) {
       };
       switch (args.collection_name) {
         case "favorites":
-          return updateCollectionIcon(WebPlatform_Node_Reference_Class(div_manager2.querySelector("&>svg.heart-icon")).as(SVGElement));
+          return updateCollectionIcon(WebPlatform_Node_Reference_Class(div_manager2.querySelector("& > div.main > svg.heart-icon")).as(SVGElement));
         case "hidden":
-          return updateCollectionIcon(WebPlatform_Node_Reference_Class(div_manager2.querySelector("&>svg.eye-off-icon")).as(SVGElement));
+          return updateCollectionIcon(WebPlatform_Node_Reference_Class(div_manager2.querySelector("& > div.main > svg.eye-off-icon")).as(SVGElement));
       }
     } catch (error) {
       Core_Console_Error(error);
