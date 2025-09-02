@@ -1,32 +1,23 @@
+import { Async_BunPlatform_File_Write_Text } from '../../../src/lib/ericchase/BunPlatform_File_Write_Text.js';
 import { BunPlatform_Glob_Match } from '../../../src/lib/ericchase/BunPlatform_Glob_Match.js';
+import { BunPlatform_Glob_Match_Ex } from '../../../src/lib/ericchase/BunPlatform_Glob_Match_Ex.js';
 import { Core_Array_Binary_Search_Insertion_Index } from '../../../src/lib/ericchase/Core_Array_Binary_Search_Insertion_Index.js';
 import { NODE_PATH, NODE_URL } from '../../../src/lib/ericchase/NodePlatform.js';
-import { Async_NodePlatform_File_Write_Text } from '../../../src/lib/ericchase/NodePlatform_File_Write_Text.js';
 import { NodePlatform_PathObject_Relative_Class } from '../../../src/lib/ericchase/NodePlatform_PathObject_Relative_Class.js';
 import { Builder } from '../../core/Builder.js';
 import { Logger } from '../../core/Logger.js';
 
 export const PATTERN = {
-  MODULE: '{.module}{.ts,.tsx,.js,.jsx}',
-  IIFE: '{.iife}{.ts,.tsx,.js,.jsx}',
-  MODULE_IIFE: '{.module,.iife}{.ts,.tsx,.js,.jsx}',
-  TS_TSX_JS_JSX: '{.ts,.tsx,.js,.jsx}',
+  IIFE_MODULE: '{.iife,.module}{.js,.jsx,.ts,.tsx}',
+  IIFE: '{.iife}{.js,.jsx,.ts,.tsx}',
+  JS_JSX_TS_TSX: '{.js,.jsx,.ts,.tsx}',
+  MODULE: '{.module}{.js,.jsx,.ts,.tsx}',
 };
 
 /**
- * External pattern cannot contain more than one "*" wildcard.
- *
- * .module and .iife scripts will be set as writable.\
- * Non .module/.iife scripts will be set as not writable.\
- * Use Processor_Set_Writable to directly include or exclude file patterns for writing.
- *
- * @defaults
- * @param config.define `undefined`
- * @param config.env `"disable"`
- * @param config.external `["*.module.js"]`
- * @param config.sourcemap `'none'`
- * @param config.target `'browser'`
- * @param extras.remap_imports `true`
+ * - Patterns in `config.external` may only contain a single `*` wildcard.
+ * - Files that match a pattern in `extras.exclude_patterns` will be skipped.
+ * - Files that match a pattern in `extras.include_patterns` but NOT in `extras.exclude_patterns` will be processed.
  */
 export function Processor_TypeScript_Generic_Bundler(config?: Config, extras?: Extras): Builder.Processor {
   return new Class(config ?? {}, extras ?? {});
@@ -40,33 +31,38 @@ class Class implements Builder.Processor {
   constructor(
     readonly config: Config,
     readonly extras: Extras,
-  ) {
+  ) {}
+  async onStartUp(): Promise<void> {
     this.config.env ??= 'disable';
     this.config.external ??= [];
     this.config.external.push('*.module.js');
+    this.config.minify ??= false;
     this.config.sourcemap ??= 'none';
     this.config.target ??= 'browser';
+    this.extras.bundler_mode ??= 'module';
+    this.extras.exclude_patterns ??= [];
+    this.extras.include_patterns ??= this.extras.bundler_mode === 'iife' ? [`**/*${PATTERN.IIFE}`] : [`**/*${PATTERN.MODULE}`];
     this.extras.remap_imports ??= true;
+
+    for (let i = 0; i < this.extras.exclude_patterns.length; i++) {
+      this.extras.exclude_patterns[i] = `${Builder.Dir.Src}/${this.extras.exclude_patterns[i]}`;
+    }
+    for (let i = 0; i < this.extras.include_patterns.length; i++) {
+      this.extras.include_patterns[i] = `${Builder.Dir.Src}/${this.extras.include_patterns[i]}`;
+    }
   }
   async onAdd(files: Set<Builder.File>): Promise<void> {
     let trigger_reprocess = false;
     for (const file of files) {
       const query = file.src_path;
-      if (BunPlatform_Glob_Match(query, `**/*${PATTERN.MODULE}`)) {
+      if (BunPlatform_Glob_Match_Ex(query, this.extras.include_patterns ?? [], this.extras.exclude_patterns ?? []) === true) {
         file.iswritable = true;
         file.out_path = NodePlatform_PathObject_Relative_Class(file.out_path).replaceExt('.js').join();
-        file.addProcessor(this, this.onProcessModule);
+        file.addProcessor(this, this.extras.bundler_mode === 'iife' ? this.onProcessIIFEScript : this.onProcessModule);
         this.bundle_set.add(file);
         continue;
       }
-      if (BunPlatform_Glob_Match(query, `**/*${PATTERN.IIFE}`)) {
-        file.iswritable = true;
-        file.out_path = NodePlatform_PathObject_Relative_Class(file.out_path).replaceExt('.js').join();
-        file.addProcessor(this, this.onProcessIIFEScript);
-        this.bundle_set.add(file);
-        continue;
-      }
-      if (BunPlatform_Glob_Match(query, `**/*${PATTERN.TS_TSX_JS_JSX}`)) {
+      if (BunPlatform_Glob_Match_Ex(query, [`${Builder.Dir.Src}/**/*${PATTERN.JS_JSX_TS_TSX}`], [`${Builder.Dir.Src}/**/*${PATTERN.IIFE_MODULE}`]) === true) {
         trigger_reprocess = true;
       }
     }
@@ -80,11 +76,11 @@ class Class implements Builder.Processor {
     let trigger_reprocess = false;
     for (const file of files) {
       const query = file.src_path;
-      if (BunPlatform_Glob_Match(query, `**/*${PATTERN.MODULE_IIFE}`)) {
+      if (BunPlatform_Glob_Match(query, `${Builder.Dir.Src}/**/*${PATTERN.IIFE_MODULE}`)) {
         this.bundle_set.delete(file);
         continue;
       }
-      if (BunPlatform_Glob_Match(query, `**/*${PATTERN.TS_TSX_JS_JSX}`)) {
+      if (BunPlatform_Glob_Match(query, `${Builder.Dir.Src}/**/*${PATTERN.JS_JSX_TS_TSX}`)) {
         trigger_reprocess = true;
       }
     }
@@ -97,18 +93,20 @@ class Class implements Builder.Processor {
 
   async onProcessModule(file: Builder.File): Promise<void> {
     try {
+      const define: Options['define'] = {};
+      for (const [key, value] of Object.entries(this.config.define?.() ?? {})) {
+        define[key] = value === undefined ? 'undefined' : JSON.stringify(value);
+      }
+
       const results = await ProcessBuildResults(
         Bun.build({
-          define: typeof this.config.define === 'function' ? this.config.define() : this.config.define,
+          define,
+          drop: this.config.drop,
           entrypoints: [file.src_path],
           env: this.config.env,
           external: this.config.external,
           format: 'esm',
-          minify: {
-            identifiers: false,
-            syntax: false,
-            whitespace: false,
-          },
+          minify: this.config.minify,
           sourcemap: this.config.sourcemap,
           target: this.config.target,
         }),
@@ -130,7 +128,7 @@ class Class implements Builder.Processor {
               file.setText(results.bundletext);
             }
           } catch (error) {
-            this.channel.error(error, 'Remap Error');
+            this.channel.error(error, `Remap Error, File: ${file.src_path}`);
           }
         } else {
           file.setText(results.bundletext);
@@ -143,32 +141,35 @@ class Class implements Builder.Processor {
             // handled above
             break;
           default:
-            await Async_NodePlatform_File_Write_Text(NODE_PATH.join(NODE_PATH.dirname(file.out_path), artifact.path), await artifact.blob.text(), true);
+            await Async_BunPlatform_File_Write_Text(NODE_PATH.join(NODE_PATH.parse(file.out_path).dir, artifact.path), await artifact.blob.text());
             break;
         }
       }
     } catch (error) {
-      this.channel.error(error, 'Module Bundle Error');
+      this.channel.error(error, `Module Bundle Error, File: ${file.src_path}`);
     }
   }
   async onProcessIIFEScript(file: Builder.File): Promise<void> {
     try {
+      const define: Options['define'] = {};
+      for (const [key, value] of Object.entries(this.config.define?.() ?? {})) {
+        define[key] = value === undefined ? 'undefined' : JSON.stringify(value);
+      }
+      define['import.meta.url'] = 'undefined';
+
       const results = await ProcessBuildResults(
         Bun.build({
-          define: typeof this.config.define === 'function' ? this.config.define() : this.config.define,
+          define,
+          drop: this.config.drop,
           entrypoints: [file.src_path],
           env: this.config.env,
-          format: 'esm',
-          minify: {
-            identifiers: false,
-            syntax: false,
-            whitespace: false,
-          },
+          format: 'iife',
+          minify: this.config.minify,
           sourcemap: this.config.sourcemap,
           target: this.config.target,
-          // add iife around scripts
-          banner: '(() => {\n',
-          footer: '})();',
+          // add IIFE syntax around scripts
+          // banner: '(() => {\n',
+          // footer: '})();',
         }),
       );
       if (results.bundletext !== undefined) {
@@ -187,52 +188,92 @@ class Class implements Builder.Processor {
             // handled above
             break;
           default:
-            await Async_NodePlatform_File_Write_Text(NODE_PATH.join(NODE_PATH.dirname(file.out_path), artifact.path), await artifact.blob.text(), true);
+            await Async_BunPlatform_File_Write_Text(NODE_PATH.join(NODE_PATH.parse(file.out_path).dir, artifact.path), await artifact.blob.text());
             break;
         }
       }
     } catch (error) {
-      this.channel.error(error, 'IIFE Bundle Error');
+      this.channel.error(error, `IIFE Bundle Error, File: ${file.src_path}`);
     }
   }
 }
 type Options = Parameters<typeof Bun.build>[0];
 interface Config {
-  define?: Options['define'] | (() => Options['define']);
+  /**
+   * Let's you define key value pairs as-is. The processor will call
+   * `JSON.stringify(value)` for you.
+   * @default undefined
+   */
+  define?: () => Record<string, any>;
+  /**
+   * Can only drop built-in and unbounded global identifiers, such as `console`
+   * and `debugger`. Cannot drop any identifier that is defined in the final
+   * bundle. The only real use case I've seen for this is removing debugger
+   * statements and logging.
+   * @default undefined */
+  drop?: Options['drop'];
+  /** @default 'disable' */
   env?: Options['env'];
+  /**
+   * Note: IIFE bundles do not have imports.
+   * @default ['*.module.js']
+   */
   external?: Options['external'];
+  /** @default false */
+  minify?: Options['minify'];
+  /** @default 'none' */
   sourcemap?: Options['sourcemap'];
+  /** @default 'browser' */
   target?: Options['target'];
 }
 interface Extras {
+  /** @default 'module' */
+  bundler_mode?: 'iife' | 'module';
+  /** @default [] */
+  exclude_patterns?: string[];
+  /**
+   * Note: `|` is used here to work around JavaScript's multi-line comments. Use `/` instead.
+   * @default
+   * [`**|*${PATTERN.IIFE}`] when bundler_mode = 'iife'
+   * [`**|*${PATTERN.MODULE}`] when bundler_mode = 'module'
+   */
+  include_patterns?: string[];
+  /**
+   * Note: IIFE bundles do not have imports.
+   * @default true
+   */
   remap_imports?: boolean;
 }
 
-class BuildArtifact {
+export class Class_BuildArtifact {
   blob: Blob;
-  hash: string | null;
-  kind: 'entry-point' | 'chunk' | 'asset' | 'sourcemap' | 'bytecode';
-  loader: 'js' | 'jsx' | 'ts' | 'tsx' | 'json' | 'toml' | 'file' | 'napi' | 'wasm' | 'text' | 'css' | 'html';
-  path: string;
-  sourcemap: BuildArtifact | null;
-  constructor(public artifact: Bun.BuildArtifact) {
+  /** string */
+  path: Bun.BuildArtifact['path'];
+  /** "js" | "jsx" | "ts" | "tsx" | "json" | "toml" | "file" | "napi" | "wasm" | "text" | "css" | "html" */
+  loader: Bun.BuildArtifact['loader'];
+  /** string | null */
+  hash: Bun.BuildArtifact['hash'];
+  /** "entry-point" | "chunk" | "asset" | "sourcemap" | "bytecode" */
+  kind: Bun.BuildArtifact['kind'];
+  sourcemap: Class_BuildArtifact | null;
+  constructor(readonly artifact: Bun.BuildArtifact) {
     this.blob = artifact;
+    this.path = artifact.path;
+    this.loader = artifact.loader;
     this.hash = artifact.hash;
     this.kind = artifact.kind;
-    this.loader = artifact.loader;
-    this.path = artifact.path;
-    this.sourcemap = artifact.sourcemap ? new BuildArtifact(artifact.sourcemap) : null;
+    this.sourcemap = artifact.sourcemap ? new Class_BuildArtifact(artifact.sourcemap) : null;
   }
 }
 async function ProcessBuildResults(buildtask: Promise<Bun.BuildOutput>): Promise<{
-  artifacts: BuildArtifact[];
+  artifacts: Class_BuildArtifact[];
   bundletext?: string;
   logs: Bun.BuildOutput['logs'];
   success: boolean;
 }> {
   const buildresults = await buildtask;
   const out: {
-    artifacts: BuildArtifact[];
+    artifacts: Class_BuildArtifact[];
     bundletext?: string;
     logs: Bun.BuildOutput['logs'];
     success: boolean;
@@ -249,7 +290,7 @@ async function ProcessBuildResults(buildtask: Promise<Bun.BuildOutput>): Promise
           out.bundletext = await artifact.text();
         }
       }
-      out.artifacts.push(new BuildArtifact(artifact));
+      out.artifacts.push(new Class_BuildArtifact(artifact));
     }
   }
   return out;
@@ -305,28 +346,10 @@ function RemapModuleImports(filepath: string, filetext: string, external?: strin
            * "../lib/a.js" -> "./src/directory/../lib/a.js" -> "./src/lib/a.js".
            *
            */
-          let resolved_path = '';
-          try {
-            if (import_statement.path.startsWith('.')) {
-              // The import.meta.resolve api uses the current script file (this one) for resolving paths, which isn't what we want.
-              // Instead, we'll use Node's resolve api to resolve the relative path using the source file's directory.
-              resolved_path = NODE_PATH.resolve(NODE_PATH.dirname(source_comment.path), import_statement.path);
-            } else {
-              // Non-relative can be resolved using the import.meta.resolve api. If the file/module does not actually exist, an error will be thrown.
-              // Node's fileURLToPath api will convert the resulting url path into a valid file path.
-              try {
-                const url = new URL(import.meta.resolve(import_statement.path));
-                if (url.protocol === 'file:') {
-                  resolved_path = NODE_URL.fileURLToPath(url);
-                }
-              } catch {}
-            }
-          } catch (error: any) {
-            throw new Error(import_statement.path + '\n' + error);
-          }
-          if (resolved_path.startsWith(srcpath)) {
+          const resolved_path = ResolveImportPath(source_comment.path, import_statement.path);
+          if (resolved_path?.startsWith(srcpath)) {
             // Convert resolved path into relative path
-            // Import paths generally follow posix path rules, so we can convert to a posix relative path object here
+            // Import paths generally follow POSIX path rules, so we can convert to a POSIX relative path object here
             let relative_path_object = NodePlatform_PathObject_Relative_Class(NODE_PATH.relative(dirpath, resolved_path)).toPosix();
             // Set path extension to .js if the path is a script
             switch (relative_path_object.ext) {
@@ -345,5 +368,25 @@ function RemapModuleImports(filepath: string, filetext: string, external?: strin
       array__bundletext_parts.push(filetext.slice(index__bundletext_parts));
       return array__bundletext_parts.join('');
     }
+  }
+}
+function ResolveImportPath(source_path: string, import_path: string): string | undefined {
+  try {
+    if (import_path.startsWith('.')) {
+      // The import.meta.resolve API uses the current script file (this one) for resolving paths, which isn't what we want.
+      // Instead, we'll use Node's resolve API to resolve the relative path using the source file's directory.
+      return NODE_PATH.resolve(NODE_PATH.parse(source_path).dir, import_path);
+    } else {
+      // Non-relative can be resolved using the import.meta.resolve API. If the file/module does not actually exist, an error will be thrown.
+      // Node's fileURLToPath API will convert the resulting URL path into a valid file path.
+      try {
+        const url = new URL(import.meta.resolve(import_path));
+        if (url.protocol === 'file:') {
+          return NODE_URL.fileURLToPath(url);
+        }
+      } catch {}
+    }
+  } catch (error: any) {
+    throw new Error(import_path + '\n' + error);
   }
 }

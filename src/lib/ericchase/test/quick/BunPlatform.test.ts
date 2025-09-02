@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { BunPlatform_Args_Has } from '../../BunPlatform_Args_Has.js';
+import { BunPlatform_Argv_Includes } from '../../BunPlatform_Argv_Includes.js';
+import { Async_BunPlatform_Extract_Env_From_Dir } from '../../BunPlatform_Extract_Env_From_Dir.js';
 import { Async_BunPlatform_File_Compare } from '../../BunPlatform_File_Compare.js';
 import { Async_BunPlatform_File_Copy } from '../../BunPlatform_File_Copy.js';
 import { Async_BunPlatform_File_Move } from '../../BunPlatform_File_Move.js';
@@ -342,14 +343,27 @@ const runner = {
   },
 };
 
-describe(BunPlatform_Args_Has.name, () => {
+describe(BunPlatform_Argv_Includes.name, () => {
   test('argv includes query', () => {
     Bun.argv.push('ABC');
-    expect(BunPlatform_Args_Has('ABC')).toBeTrue();
+    expect(BunPlatform_Argv_Includes('ABC')).toBeTrue();
     Bun.argv.pop();
   });
   test('argv does not include query', () => {
-    expect(BunPlatform_Args_Has('DEF')).toBeFalse();
+    expect(BunPlatform_Argv_Includes('DEF')).toBeFalse();
+  });
+});
+
+describe(Async_BunPlatform_Extract_Env_From_Dir.name, () => {
+  test('extract VALUE=1 from .env.test-1', async () => {
+    const result = await Async_BunPlatform_Extract_Env_From_Dir({ cwd: __dirname, envfiles: ['.env.test-1'] }, 'VALUE');
+    expect(result.type).toBe('json');
+    expect(result.value).toHaveProperty('VALUE', '1');
+  });
+  test('extract VALUE=2 from .env.test-2', async () => {
+    const result = await Async_BunPlatform_Extract_Env_From_Dir({ cwd: __dirname, envfiles: ['.env.test-2'] }, 'VALUE');
+    expect(result.type).toBe('json');
+    expect(result.value).toHaveProperty('VALUE', '2');
   });
 });
 
@@ -814,7 +828,7 @@ describe(BunPlatform_Glob_Match.name, async () => {
   }
 
   runner['[01] path is directory and empty'](async (path) => {
-    await fn(path, '**/*', true);
+    await fn(path, '**', true);
   });
 });
 
@@ -824,14 +838,14 @@ describe(BunPlatform_Glob_Match_Ex.name, async () => {
   }
 
   runner['[01] path is directory and empty'](async (path) => {
-    await fn(path, ['**/*'], [], true);
-    await fn(path, ['**/*'], ['**/case_directory'], false);
+    await fn(path, ['**'], [], true);
+    await fn(path, ['**'], ['**/case_directory'], false);
   });
 });
 
 describe(Async_BunPlatform_Glob_Scan_Ex.name, async () => {
   async function fn(path: string, expected: string[]) {
-    const entries = Array.from(await Async_BunPlatform_Glob_Scan_Ex(path, ['**/*'], [], { absolute_paths: false, only_files: false }));
+    const entries = Array.from(await Async_BunPlatform_Glob_Scan_Ex(path, ['**'], [], { absolute_paths: false, only_files: false }));
     for (const entry of entries) {
       expect(entry).toBeOneOf(expected);
     }
@@ -883,7 +897,7 @@ describe(Async_BunPlatform_Glob_Scan_Ex.name, async () => {
 
 describe(Async_BunPlatform_Glob_Scan_Generator.name, async () => {
   async function fn(path: string, expected: string[]) {
-    const entries = await Array.fromAsync(Async_BunPlatform_Glob_Scan_Generator(path, '**/*', { absolute_paths: false, only_files: false }));
+    const entries = await Array.fromAsync(Async_BunPlatform_Glob_Scan_Generator(path, '**', { absolute_paths: false, only_files: false }));
     for (const entry of entries) {
       expect(entry).toBeOneOf(expected);
     }

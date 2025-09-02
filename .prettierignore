@@ -1,22 +1,23 @@
-# prettier ignores files setup in .gitignore
+# Patterns from .gitignore are included
 
-# probably don't want to format your hand written documents
-coverage/
-docs/
-
-# don't want to format lock files
-bun.lock
 *-lock.json
 *-lock.yaml
+bun.lock
 
-# processor bundles
-tools/core/bundle/*
-tools/core-web/bundle/*
+/coverage/
+/docs/
+/tools/**/bundle/
 
-##
-## Repo Specific
-##
+## Project Specific
 
-# up to you whether you want to format the resulting files
-out/
-release/
+# these do not need to be regularly formatted
+/server/
+/src/lib/ericchase/
+/tools/*/*
+
+# up to you whether you want to format the build files
+# /out/
+/release/
+
+# these are generally going to be large bundles
+/out/external/

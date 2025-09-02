@@ -1,13 +1,7 @@
-# prettier ignores files setup in .gitignore
-
-# probably don't want to format your hand written documents
-coverage/
-docs/
-
-# don't want to format lock files
-bun.lock
 *-lock.json
 *-lock.yaml
+bun.lock
 
-# up to you whether you want to format the resulting files
-public/
+/coverage/
+/docs/
+/tools/**/bundle/

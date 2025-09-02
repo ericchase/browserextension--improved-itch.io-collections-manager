@@ -1,8 +1,5 @@
 import { WebPlatform_Node_Reference_Class } from '../lib/ericchase/WebPlatform_Node_Reference_Class.js';
 import { LoadOptions, options, SaveOptions } from '../lib/lib.options.module.js';
-import { HotRefresh } from '../lib/server/HotRefresh.js';
-
-HotRefresh();
 
 const span_save_status = WebPlatform_Node_Reference_Class(document.querySelector('#save-status')).as(HTMLSpanElement);
 

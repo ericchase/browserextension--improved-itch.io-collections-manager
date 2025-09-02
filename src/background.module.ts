@@ -1,4 +1,4 @@
-import Dexie from 'dexie';
+import { Dexie } from './external/dexie/dexie.module.js';
 import { Core_Console_Error } from './lib/ericchase/Core_Console_Error.js';
 import { Core_Promise_Orphan } from './lib/ericchase/Core_Promise_Orphan.js';
 import { BrowserName } from './lib/lib.env.module.js';
@@ -102,7 +102,9 @@ chrome.contextMenus.onClicked.addListener((info, currentTab) => {
   }
 });
 
+// chrome doesn't seem to support async listeners
 chrome.runtime.onMessage.addListener((message: StorageMessage, sender, sendResponse) => {
+  // could have probably used an async iife here, but i'm showing off this api
   Core_Promise_Orphan(async_onMessageListener(message, sendResponse));
   return true;
 });

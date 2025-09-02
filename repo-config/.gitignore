@@ -1,3 +1,6 @@
 # the other files are copied from out
-/release/**/temp/**
-!/release/**/temp/manifest.json
+/release/*/temp/**
+!/release/*/temp/manifest.json
+# tracking the archives is adding a lot of noise to git
+# a better flow would be to actively post releases on github
+/release/*/*.zip

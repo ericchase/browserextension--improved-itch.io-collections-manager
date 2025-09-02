@@ -1,3 +1,11 @@
-# up to you whether you want to format the resulting files
-out/
-release/
+# these do not need to be regularly formatted
+/server/
+/src/lib/ericchase/
+/tools/*/*
+
+# up to you whether you want to format the build files
+# /out/
+/release/
+
+# these are generally going to be large bundles
+/out/external/

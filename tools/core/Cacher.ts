@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite';
-import { default as xxhash } from 'xxhash-wasm';
 import { Async_BunPlatform_File_Read_Bytes } from '../../src/lib/ericchase/BunPlatform_File_Read_Bytes.js';
+import { BunPlatform_Glob_Match } from '../../src/lib/ericchase/BunPlatform_Glob_Match.js';
 import { Core_Console_Error } from '../../src/lib/ericchase/Core_Console_Error.js';
 import { Core_Promise_Orphan } from '../../src/lib/ericchase/Core_Promise_Orphan.js';
 import { NODE_PATH } from '../../src/lib/ericchase/NodePlatform.js';
@@ -9,7 +9,6 @@ import { Async_NodePlatform_Path_Get_Stats } from '../../src/lib/ericchase/NodeP
 
 // constants
 
-const { h64Raw } = await xxhash();
 export const cachepath = NODE_PATH.join('cache');
 if ((await Async_NodePlatform_Directory_Create(cachepath, true)).value !== true) {
   throw 'Could not create cache database path.';
@@ -382,27 +381,24 @@ export class FILESTATS {
     CACHELOCK.Unlock(FILESTATS_DB.TABLE);
   }
   static QueryStats(path: string): SQLQueryResult<FILESTATS_RECORD | undefined> {
-    path = NODE_PATH.join(path);
     try {
+      path = NODE_PATH.join(path);
       return { data: FILESTATS_DB.GetRecord[FILESTATS_ID.PATH]({ [FILESTATS_ID.PATH]: path }), error: undefined };
     } catch (error) {
       return CreateQueryError(error);
     }
   }
-  static QueryStatsLike(partial_path: string): SQLQueryResult<FILESTATS_RECORD[] | undefined> {
-    if (partial_path === undefined) {
-      throw new Error();
-    }
-    partial_path = NODE_PATH.join(partial_path);
+  static QueryStatsLike(path_startswith: string): SQLQueryResult<FILESTATS_RECORD[] | undefined> {
     try {
-      return { data: FILESTATS_DB.GetRecordsLike[FILESTATS_ID.PATH]({ [FILESTATS_ID.PATH]: partial_path + '%' }), error: undefined };
+      path_startswith = NODE_PATH.join(path_startswith);
+      return { data: FILESTATS_DB.GetRecordsLike[FILESTATS_ID.PATH]({ [FILESTATS_ID.PATH]: path_startswith + '%' }), error: undefined };
     } catch (error) {
       return CreateQueryError(error);
     }
   }
   static async UpdateStats(path: string): Promise<SQLQueryResult<FILESTATS_RECORD | undefined>> {
-    path = NODE_PATH.join(path);
     try {
+      path = NODE_PATH.join(path);
       FILESTATS_DB.UpdateRecord({ [FILESTATS_ID.PATH]: path, [FILESTATS_ID.MTIMEMS]: await FILESTATS.GetMTimeMS(path), [FILESTATS_ID.HASH]: await FILESTATS.GetB64Hash(path) });
       return FILESTATS.QueryStats(path);
     } catch (error) {
@@ -431,8 +427,8 @@ export class FILESTATS {
     }
   }
   static RemoveStats(path: string): SQLQueryResult<boolean> {
-    path = NODE_PATH.join(path);
     try {
+      path = NODE_PATH.join(path);
       FILESTATS_DB.DeleteRecord({ path: path });
       return { data: true };
     } catch (error) {
@@ -449,8 +445,8 @@ export class FILESTATS {
     }
   }
   static async PathIsStale(path: string): Promise<SQLQueryResult<boolean>> {
-    path = NODE_PATH.join(path);
     try {
+      path = NODE_PATH.join(path);
       const q0 = FILESTATS_DB.GetRecord[FILESTATS_ID.PATH]({ [FILESTATS_ID.PATH]: path });
       if (q0 === undefined || q0[FILESTATS_ID.MTIMEMS] !== (await FILESTATS.GetMTimeMS(path)) || q0[FILESTATS_ID.HASH] !== (await FILESTATS.GetB64Hash(path))) {
         return { data: true };
@@ -461,9 +457,9 @@ export class FILESTATS {
     }
   }
   static async PathsAreEqual(path0: string, path1: string): Promise<SQLQueryResult<boolean>> {
-    path0 = NODE_PATH.join(path0);
-    path1 = NODE_PATH.join(path1);
     try {
+      path0 = NODE_PATH.join(path0);
+      path1 = NODE_PATH.join(path1);
       const q0 = FILESTATS_DB.GetRecord[FILESTATS_ID.PATH]({ [FILESTATS_ID.PATH]: path0 });
       const q1 = FILESTATS_DB.GetRecord[FILESTATS_ID.PATH]({ [FILESTATS_ID.PATH]: path1 });
       if (q0 !== undefined && q1 !== undefined) {
@@ -492,7 +488,7 @@ export class FILESTATS {
   static async GetHash(path: string): Promise<bigint> {
     const { error, value: bytes } = await Async_BunPlatform_File_Read_Bytes(path);
     if (bytes !== undefined) {
-      return h64Raw(bytes);
+      return Bun.hash.wyhash(bytes);
     }
     throw error;
   }
@@ -535,69 +531,75 @@ export function Cacher_Watch_Directory(
   let timer_id: Parameters<typeof clearTimeout>[0] = undefined;
   let abort = false;
 
-  const glob = new Bun.Glob('**/*');
+  const glob = new Bun.Glob('**');
 
   async function scan() {
-    if (abort === true) return;
+    try {
+      if (abort === true) return;
 
-    const added_set = new Set<string>();
-    const deleted_set = new Set<string>();
-    const modified_set = new Set<string>();
+      const added_set = new Set<string>();
+      const deleted_set = new Set<string>();
+      const modified_set = new Set<string>();
 
-    for (const subpath of await Array.fromAsync(
-      glob.scan({
-        absolute: false,
-        cwd: path,
-        dot: true,
-        followSymlinks: false,
-        onlyFiles: true,
-        throwErrorOnBrokenSymlink: false,
-      }),
-    )) {
-      added_set.add(NODE_PATH.join(path, subpath));
-    }
+      for (const subpath of await Array.fromAsync(
+        glob.scan({
+          absolute: false,
+          cwd: path,
+          dot: true,
+          followSymlinks: false,
+          onlyFiles: true,
+          throwErrorOnBrokenSymlink: false,
+        }),
+      )) {
+        if (BunPlatform_Glob_Match(subpath, '**/node_modules/**') !== true) {
+          added_set.add(NODE_PATH.join(path, subpath));
+        }
+      }
 
-    const query_results = FILESTATS.QueryStatsLike(path);
-    if (query_results.data !== undefined) {
-      for (const record of query_results.data) {
-        const record_path = record[FILESTATS_ID.PATH] as string;
-        if (added_set.has(record_path)) {
-          // check for modication
-          const { data: modified } = await FILESTATS.UpdateRecordIfModified(record);
-          if (modified === true) {
-            modified_set.add(record_path);
+      const query_results = FILESTATS.QueryStatsLike(path);
+      if (query_results.data !== undefined) {
+        for (const record of query_results.data) {
+          const record_path = record[FILESTATS_ID.PATH] as string;
+          if (added_set.has(record_path)) {
+            // check for modification
+            const { data: modified } = await FILESTATS.UpdateRecordIfModified(record);
+            if (modified === true) {
+              modified_set.add(record_path);
+            }
+          } else {
+            FILESTATS.RemoveStats(record_path);
+            deleted_set.add(record_path);
           }
-        } else {
-          FILESTATS.RemoveStats(record_path);
-          deleted_set.add(record_path);
-        }
-        added_set.delete(record_path);
-      }
-    }
-
-    for (const path of added_set) {
-      await FILESTATS.UpdateStats(path);
-    }
-
-    // @ts-ignore typescript doesn't understand asynchronous code
-    if (abort === true) return;
-
-    await callback(added_set, deleted_set, modified_set);
-
-    if (added_set.size > 0 || deleted_set.size > 0 || modified_set.size > 0) {
-      // reset
-      delay_ms = min_delay_ms;
-      scan_count = 0;
-    } else {
-      if (delay_ms < 10_000) {
-        if (scan_count++ >= 5) {
-          delay_ms += 250;
-          scan_count = 0;
+          added_set.delete(record_path);
         }
       }
-    }
 
-    timer_id = setTimeout(() => Core_Promise_Orphan(scan()), delay_ms);
+      for (const path of added_set) {
+        await FILESTATS.UpdateStats(path);
+      }
+
+      // @ts-ignore typescript doesn't understand asynchronous code
+      if (abort === true) return;
+
+      await callback(added_set, deleted_set, modified_set);
+
+      if (added_set.size > 0 || deleted_set.size > 0 || modified_set.size > 0) {
+        // reset
+        delay_ms = min_delay_ms;
+        scan_count = 0;
+      } else {
+        if (delay_ms < 10_000) {
+          if (scan_count++ >= 10) {
+            delay_ms += 250;
+            scan_count = 0;
+          }
+        }
+      }
+
+      timer_id = setTimeout(() => Core_Promise_Orphan(scan()), delay_ms);
+    } catch (error) {
+      Core_Console_Error(`${Cacher_Watch_Directory.name}: Error during scan:`, error);
+    }
   }
   timer_id = setTimeout(() => Core_Promise_Orphan(scan()), delay_ms);
 

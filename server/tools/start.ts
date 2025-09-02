@@ -1,16 +1,21 @@
 import { Core_Console_Log } from '../src/lib/ericchase/Core_Console_Log.js';
 import { NODE_PATH } from '../src/lib/ericchase/NodePlatform.js';
 
-Bun.spawnSync(['bun', 'install'], {
-  cwd: NODE_PATH.join(__dirname, '..'),
-  stderr: 'inherit',
-  stdout: 'inherit',
-});
+// Bun.spawnSync(['bun', 'install'], {
+//   cwd: NODE_PATH.join(__dirname, '..'),
+//   stderr: 'inherit',
+//   stdout: 'inherit',
+// });
 
 let server_process: Bun.Subprocess<'ignore', 'inherit', 'inherit'> | undefined = undefined;
 
-process.on('exit', () => {
-  server_process?.kill(0);
+process.on('SIGTERM', async () => {
+  if (server_process !== undefined) {
+    server_process.kill('SIGTERM');
+    await server_process.exited;
+    server_process = undefined;
+  }
+  process.exit(0);
 });
 
 while (true) {
